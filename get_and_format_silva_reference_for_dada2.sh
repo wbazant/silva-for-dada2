@@ -1,7 +1,8 @@
 #!/usr/bin/bash
 # Author: wbazant
 # Get the SILVA release and format it as a DADA2 reference
-# TODO: a special case for E. coli to match DADA2's special handling
+
+# TODO: two word genera and species like "Candidatus Nitrosopumilus piranensis" won't work - remove "Candidatus"?
 
 name=$1
 version=$2
@@ -44,6 +45,7 @@ $/=">"; while(<>){
   next if split(";", $lineage) > 6;
 
   $lineage =~ s/;uncultured//s;
+  $lineage =~ s{Escherichia-Shigella}{Escherichia/Shigella};
   
   say ">$lineage;\n$seq";
 }
@@ -65,9 +67,10 @@ $/=">"; while(<>){
   my ($id, $lineage, $species) = split "\t", $h;
   next if split(";", $lineage) > 6;
   next if $lineage =~ /uncultured$/;
+  $lineage =~ s{Escherichia-Shigella}{Escherichia/Shigella};
 
   my ($genus) = reverse split (";", $lineage);
-  next if $species !~ /$genus/;
+  next if $species !~ /$genus/ and $genus ne "Escherichia/Shigella";
   next if $species =~ /unidentified/;
   next if $species =~ /sp. /;
   next if $species =~ /sp.$/;
